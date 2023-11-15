@@ -1,5 +1,6 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types'
 import { DeployFunction } from 'hardhat-deploy/types'
+import { getEIP1559Params } from '../utils/gas';
 
 const deployController: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deployments, getNamedAccounts } = hre
@@ -7,10 +8,12 @@ const deployController: DeployFunction = async function (hre: HardhatRuntimeEnvi
   const {
     admin,
   } = await getNamedAccounts()
+  const params = await getEIP1559Params(hre.ethers.provider)
   await deploy("LilypadController", {
     from: admin,
     args: [],
     log: true,
+    ...params,
   })
   
   const controllerContract = await deployments.get('LilypadController')
@@ -25,13 +28,14 @@ const deployController: DeployFunction = async function (hre: HardhatRuntimeEnvi
     {
       from: admin,
       log: true,
+      ...params,
     },
     'initialize',
     storageContract.address,
     usersContract.address,
     paymentsContract.address,
     mediationContract.address,
-    jobCreatorContract.address
+    jobCreatorContract.address,
   )
 
   await execute(
@@ -39,6 +43,7 @@ const deployController: DeployFunction = async function (hre: HardhatRuntimeEnvi
     {
       from: admin,
       log: true,
+      ...params,
     },
     'setControllerAddress',
     controllerContract.address, 
@@ -49,6 +54,7 @@ const deployController: DeployFunction = async function (hre: HardhatRuntimeEnvi
     {
       from: admin,
       log: true,
+      ...params,
     },
     'setControllerAddress',
     controllerContract.address, 
@@ -59,6 +65,7 @@ const deployController: DeployFunction = async function (hre: HardhatRuntimeEnvi
     {
       from: admin,
       log: true,
+      ...params,
     },
     'setControllerAddress',
     controllerContract.address, 

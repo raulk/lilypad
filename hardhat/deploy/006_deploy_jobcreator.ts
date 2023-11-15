@@ -1,5 +1,6 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types'
 import { DeployFunction } from 'hardhat-deploy/types'
+import { getEIP1559Params } from '../utils/gas';
 
 const deployJobCreator: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deployments, getNamedAccounts } = hre
@@ -8,16 +9,19 @@ const deployJobCreator: DeployFunction = async function (hre: HardhatRuntimeEnvi
     admin,
     solver,
   } = await getNamedAccounts()
+  const params = await getEIP1559Params(hre.ethers.provider)
   await deploy("LilypadOnChainJobCreator", {
     from: admin,
     args: [],
     log: true,
+    ...params,
   })
 
   await deploy("ExampleClient", {
     from: admin,
     args: [],
     log: true,
+    ...params,
   })
 
   const tokenContract = await deployments.get('LilypadToken')
@@ -28,9 +32,10 @@ const deployJobCreator: DeployFunction = async function (hre: HardhatRuntimeEnvi
     {
       from: admin,
       log: true,
+      ...params,
     },
     'initialize',
-    tokenContract.address
+    tokenContract.address,
   )
 
   await execute(
@@ -38,9 +43,10 @@ const deployJobCreator: DeployFunction = async function (hre: HardhatRuntimeEnvi
     {
       from: admin,
       log: true,
+      ...params,
     },
     'initialize',
-    jobCreator.address
+    jobCreator.address,
   )
 
   // we set the controller of the job creator to be the solver
@@ -50,9 +56,10 @@ const deployJobCreator: DeployFunction = async function (hre: HardhatRuntimeEnvi
     {
       from: admin,
       log: true,
+      ...params,
     },
     'setControllerAddress',
-    solver
+    solver,
   )
   return true
 }
